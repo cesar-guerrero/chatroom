@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-
 import freemarker.template.Configuration;
 import spark.ExceptionHandler;
 import spark.ModelAndView;
@@ -22,6 +21,17 @@ public class Server {
 		
 	}
 	
+	public void Start() {
+		System.out.println("[Server] : server set up");
+		Spark.port(5555);
+		Spark.externalStaticFileLocation("src/main/resources/static");
+	    Spark.exception(Exception.class, new ExceptionPrinter());
+	    FreeMarkerEngine freeMarker = createEngine();
+	    
+	    // Setup Spark Routes
+	    Spark.get("/home", new FrontHandler(), freeMarker);
+	}
+
 	private static FreeMarkerEngine createEngine() {
 
 		Configuration config = new Configuration();
@@ -36,23 +46,11 @@ public class Server {
 		}
 		return new FreeMarkerEngine(config);
 	}
-	
-	public void Start() {
-		
-		Spark.port(5555);
-		Spark.externalStaticFileLocation("src/main/resources/static");
-	    Spark.exception(Exception.class, new ExceptionPrinter());
-	    FreeMarkerEngine freeMarker = createEngine();
-	    
-	    // Setup Spark Routes
-	    Spark.get("/home", new FrontHandler(), freeMarker);
-	}
-	
+
 	private class FrontHandler implements TemplateViewRoute {
 		@Override
 		public ModelAndView handle(Request req, Response res) {
-			
-			Map<String, Object> variables = ImmutableMap.of("title", "Bacon");
+			Map<String, String> variables = ImmutableMap.of("title", "Bacon");
 			return new ModelAndView(variables, "home.ftl");
 		}
 	}
